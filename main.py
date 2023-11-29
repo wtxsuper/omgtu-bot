@@ -5,7 +5,7 @@ from os import getenv
 from aiogram.utils.token import validate_token
 from dotenv import load_dotenv
 
-from bot import bot_start
+from bot import *
 from messages import error
 
 load_dotenv()
