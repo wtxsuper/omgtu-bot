@@ -22,7 +22,7 @@ async def main() -> None:
 Отличный помощник для студента и преподавателя в любимом мессенджере.
 Сделано в рамках курсового проекта в 2023 году.
 \033[3m(с) Роман Корноухов, студент гр. ПИН-222.
-\033[5mhttps://github.com/wtxsuper/omgtu-bot\033[0m\n''')
+\033[5mhttps://github.com/wtxsuper/omgtu-bot\n\033[0m''')
     try:
         if not BOT_TOKEN or BOT_TOKEN == '':
             raise NameError("No token provided")

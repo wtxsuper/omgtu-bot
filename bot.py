@@ -16,7 +16,7 @@ async def bot_start(token: str) -> None:
     logger = logging.getLogger("bot")
     logger.debug("Создан логгер для бота.")
     logger.debug("В функцию бота передан токен %s.", token)
-    print("...")
+    print("Для отключения бота нажмите Ctrl + C")
     try:
         # Initialize Bot instance with a default parse mode which will be passed to all API calls
         bot = Bot(token, parse_mode=ParseMode.HTML)
@@ -25,3 +25,6 @@ async def bot_start(token: str) -> None:
         await dp.start_polling(bot)
     except:
         error("Ошибка подключения к боту! Проверьте правильность токена.")
+        return
+
+
