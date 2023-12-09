@@ -10,10 +10,12 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.utils.markdown import *
 from aiogram_calendar import SimpleCalendar, get_user_locale, SimpleCalendarCallback
 
-import main
+from api import RuzAPI
+from main import DEBUG_MODE
 from messages import error
 
 dp = Dispatcher()
+ruz = RuzAPI()
 
 
 class User(StatesGroup):
@@ -21,6 +23,7 @@ class User(StatesGroup):
     date = State()
 
 
+digits = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟']
 weekdays = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
 
 
@@ -50,18 +53,25 @@ async def command_start(message: Message, state: FSMContext) -> None:
 
 @dp.message(User.group)
 async def group_select(message: Message, state: FSMContext) -> None:
-    # TODO Проверка на то, что такая группа действительно существует, лучше вывод клавиатуры с похожими
-    await state.update_data(group=message.text)
-    await state.set_state(User.date)
-    await message.answer("Группа успешно выбрана!")
-    await message.answer("Выбери дату, на которую хочешь отобразить расписание:", reply_markup=await SimpleCalendar(
-        locale=await get_user_locale(message.from_user)).start_calendar(year=datetime.now().year,
-                                                                        month=datetime.now().month))
+    try:
+        selected_group = ruz.search_group(message.text)[0]
+        if not selected_group:
+            await message.answer("Не удалось найти группу, попробуйте ещё раз!")
+            return
+        await state.update_data(group=selected_group)
+        await state.set_state(User.date)
+        await message.answer(f"Выбрана группа {selected_group['label']}!")
+        await message.answer("Выбери дату, на которую хочешь отобразить расписание:", reply_markup=await SimpleCalendar(
+            locale=await get_user_locale(message.from_user)).start_calendar(year=datetime.now().year,
+                                                                            month=datetime.now().month))
+    except:
+        await message.answer("Не удалось найти группу, попробуйте ещё раз!")
+        return
 
 
-# simple calendar usage - filtering callbacks of calendar format
 @dp.callback_query(SimpleCalendarCallback.filter())
-async def process_calendar(callback_query: CallbackQuery, callback_data: SimpleCalendarCallback) -> None:
+async def process_calendar(callback_query: CallbackQuery, callback_data: SimpleCalendarCallback,
+                           state: FSMContext) -> None:
     selected, date = await SimpleCalendar(locale=await get_user_locale(callback_query.from_user)).process_selection(
         callback_query, callback_data)
     if selected:
@@ -70,10 +80,34 @@ async def process_calendar(callback_query: CallbackQuery, callback_data: SimpleC
         builder.add(InlineKeyboardButton(text="Сменить группу 🔁", callback_data="group"))
         builder.add(InlineKeyboardButton(text="Найти преподавателя 🔎", callback_data="find"))
         builder.adjust(1)
-        # TODO Вывод расписания
+
+        # Вывод расписания
+        state_data = await state.get_data()
+        print(f"state_data = {state_data}")
+        group = state_data.get("group")
+        group_id = group.get('id')
+        print(f"group_id = {group_id}")
+        timetable = ruz.timetable_group(group_id, date)
         await callback_query.message.answer(
-            f'''Расписание на {hbold(weekdays[date.weekday()].lower())}, {hbold(date.strftime("%d.%m.%Y"))}\nВ разработке...''',
+            f'''Расписание на {hbold(weekdays[date.weekday()].lower())}, {hbold(date.strftime("%d.%m.%Y"))}''',
             reply_markup=builder.as_markup())
+        if not timetable:
+            await callback_query.message.answer("Похоже, что пар на этот день нет...")
+        for lesson in timetable:
+            answer = (
+                f"{digits[lesson.get('lessonNumberStart')]} {lesson.get('beginLesson')}-{lesson.get('endLesson')} "
+                f"{hbold(''.join([i[0] for i in lesson.get('kindOfWork').split(' ')]).upper())}\n"
+                f"{hbold(lesson.get('discipline'))}\n"
+                f"👨‍🏫 {lesson.get('lecturer')}\n"
+                f"📍 {lesson.get('auditorium')}\n"
+                f"🖇️ ")
+            if lesson.get('stream'):
+                answer += lesson.get('stream')
+            elif lesson.get('subGroup'):
+                answer += lesson.get('subGroup')
+            else:
+                answer += group.get('label')
+            await callback_query.message.answer(answer)
         await callback_query.answer()
 
 
@@ -103,7 +137,7 @@ async def group_change(callback: CallbackQuery) -> None:
 
 @dp.message(Command("debug"))
 async def debug(message: Message, state: FSMContext) -> None:
-    if main.DEBUG_MODE == "1":
+    if DEBUG_MODE == "1":
         await message.answer(f"{hbold('User ID')}: {message.from_user.id}\n"
                              f"{hbold('State')}: {await state.get_state()}\n"
                              f"{hbold('DState')}: {await state.get_data()}")
