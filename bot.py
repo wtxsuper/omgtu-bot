@@ -12,7 +12,6 @@ from aiogram_calendar import SimpleCalendar, get_user_locale, SimpleCalendarCall
 
 from api import RuzAPI
 from main import DEBUG_MODE
-from messages import error
 
 dp = Dispatcher()
 ruz = RuzAPI()
@@ -35,7 +34,6 @@ async def bot_start(BOT_TOKEN: str) -> None:
         # And the run events dispatching
         await dp.start_polling(bot)
     except:
-        error("Ошибка подключения к боту! Проверьте правильность токена.")
         return
 
 
