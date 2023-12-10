@@ -14,15 +14,15 @@ def find_overlap(student_schedule: List, teacher_schedule: List) -> List:
             tn = t.get('lessonNumberStart')  # номер пары преподавателя
 
             # Если в удалённых корпусах, то студент и преподав. должны быть в нём
-            if sb != tb == 'УЛК-12':
+            if sb != tb == 'УЛК-12' or tb != sb == 'УЛК-12':
                 continue
-            if sb != tb == 'УЛК-9':
+            if sb != tb == 'УЛК-9' or tb != sb == 'УЛК-9':
                 continue
-            if sb != tb == 'УЛК-10':
+            if sb != tb == 'УЛК-10' or tb != sb == 'УЛК-10':
                 continue
-            if (sb == 'УЛК-3' or sb == 'УЛК-4') and (tb != 'УЛК-3' or tb != 'УЛК-4'):
+            if not (sb == 'УЛК-3' or sb == 'УЛК-4') == (tb == 'УЛК-3' or tb == 'УЛК-4'):
                 continue
-            if (sb == 'УЛК-13' or sb == 'УЛК-14') and (tb != 'УЛК-13' or tb != 'УЛК-14'):
+            if not ((sb == 'УЛК-13' or sb == 'УЛК-14') == (tb == 'УЛК-13' or tb == 'УЛК-14')):
                 continue
 
             # если у студента и у преподавателя пара начинается в одно время, то студент может подойти до пары
@@ -30,12 +30,11 @@ def find_overlap(student_schedule: List, teacher_schedule: List) -> List:
                 overlaps.append(['до начала', s, t])
 
             # если у студента закачиваются пары раньше преподавателя, то он может подойти после конца своей
-            if (si == len(student_schedule) - 1) and (len(student_schedule) < len(teacher_schedule)) and (
-                    tn == sn or tn == sn - 1):
+            if (si == len(student_schedule) - 1) and (ti != len(student_schedule) - 1) and (tn == sn):
                 overlaps.append(['после конца', s, teacher_schedule[ti + 1]])
 
             # если большая перемена (после чётных пар) и не последняя пара у п-ля, то студент может подойти
-            if (sn % 2 == 0) and (ti != len(teacher_schedule) - 1) and (tn == sn):
-                overlaps.append(['на перемене между', s, teacher_schedule[ti + 1]])
+            if (sn % 2 == 0) and (ti != len(teacher_schedule) - 1) and (tn == sn + 1):
+                overlaps.append(['на перемене между', s, t])
 
     return overlaps
