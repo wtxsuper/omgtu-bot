@@ -32,9 +32,9 @@ weekdays = ["Понедельник", "Вторник", "Среда", "Четв�
 async def bot_start(BOT_TOKEN: str) -> None:
     print("Для отключения бота нажмите Ctrl + C")
     try:
-        # Initialize Bot instance with a default parse mode which will be passed to all API calls
+        # Запуск бота с режимом парсинга HTML
         bot = Bot(BOT_TOKEN, parse_mode=ParseMode.HTML)
-        # And the run events dispatching
+        # Запуск диспетчера
         await dp.start_polling(bot)
     except:
         return
