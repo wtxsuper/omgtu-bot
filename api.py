@@ -17,7 +17,7 @@ class RuzAPI:
         if r.status_code == 200:
             return r.json()
         raise requests.exceptions.BaseHTTPError(
-            "[Ошибка] RUZ отдал код {}!\nURL: '{}'".format(r.status_code, self.base_url + sub_url))
+            f"ERROR! RUZ отдал код {r.status_code}!\nURL: '{self.HOST + sub_url}'")
 
     def search_group(self, group_name: str) -> List:
         """Поиск группы по ее названию"""
