@@ -26,7 +26,7 @@ def find_overlap(student_schedule: List, teacher_schedule: List) -> List:
                 continue
 
             # если у студента пары начинаются позже, то студент может подойти до пары
-            if (si == 0) and (sn == tn):
+            if (si == 0) and (ti != 0) and (sn == tn):
                 overlaps.append(['до начала', s, t])
 
             # если у студента закачиваются пары раньше преподавателя, то он может подойти после конца своей
@@ -34,7 +34,7 @@ def find_overlap(student_schedule: List, teacher_schedule: List) -> List:
                 overlaps.append(['после конца', s, teacher_schedule[ti + 1]])
 
             # если большая перемена (после чётных пар) и не последняя пара у п-ля, то студент может подойти
-            if (sn % 2 == 0) and (ti != len(teacher_schedule) - 1) and (tn == sn + 1):
-                overlaps.append(['на перемене между', s, t])
+            if (sn % 2 == 0) and (ti != len(teacher_schedule) - 1) and (tn == sn):
+                overlaps.append(['на перемене между', s, teacher_schedule[ti + 1]])
 
     return overlaps
