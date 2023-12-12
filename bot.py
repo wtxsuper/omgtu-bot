@@ -153,7 +153,7 @@ async def find_teacher(callback: CallbackQuery, state: FSMContext) -> None:
 
 
 @dp.message(User.teacher)
-async def group_select(message: Message, state: FSMContext) -> None:
+async def overlap_find(message: Message, state: FSMContext) -> None:
     selected_teacher = ruz.search_teacher(message.text)
     if not selected_teacher:
         await message.answer("Не удалось найти преподавателя, попробуйте ещё раз!")
